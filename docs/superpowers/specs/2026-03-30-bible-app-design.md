@@ -73,15 +73,19 @@ streakFreezes: number    // 0–3 held at a time
 defaultTranslation: string
 dailyGoalMinutes: number
 reminderTime: string     // "07:30"
+timezone: string         // IANA format e.g. "America/New_York" — set during onboarding
 theme: string
 friendIds: string[]
 pendingFriendIds: string[]
+referredBy: string       // userId of person who invited them — set at registration
+invitesConverted: number // count of people who joined via this user's invite link
 createdAt: timestamp
 
 subcollections:
   /annotations/{id}     // highlights + notes: bookId, chapterId, verseNumber, type, color, text
-  /readingLog/{dateStr} // one doc per day read: date, bookId, chapterId, planId, xpEarned
+  /readingLog/{dateStr} // one doc per day read: date, bookId, chapterId, planId, xpEarned, translation
   /achievements/{id}    // earned badges: achievementId, earnedAt
+  /bookProgress/{bookId} // set of completed chapterNumbers: {chapters: number[]} — updated by onReadingComplete for all reading, plan or free
 ```
 
 ### `/groups/{groupId}`
@@ -148,13 +152,14 @@ title, body, targetAll: bool, activeFrom, activeTo
 
 | Function | Trigger | What it does |
 |---|---|---|
-| `onReadingComplete` | Firestore write: `userPlans.todayRead = true` | Updates streak, awards XP (xpTotal + xpBalance), checks achievements, updates group/members daily status, triggers group activity FCM |
-| `dailyStreakCheck` | Scheduled: midnight per user timezone | Users who haven't read → consume streak freeze if available → else reset streak to 0. Sends at-risk push 2hrs before midnight. |
-| `onNudgeSent` | Firestore write: new nudge doc | Delivers FCM to nudged user. If they read within 24h → awards +15 XP to sender. Auto-deletes nudge after 24h. |
-| `onAchievementCheck` | Called by `onReadingComplete` | Evaluates all achievement conditions against user state. Writes to `/achievements` if newly earned. Sends celebration FCM. |
-| `weeklyLeaderboardReset` | Scheduled: Sunday midnight | Snapshots `weeklyXpBoard`, resets to 0, sends "this week's top reader" notification to each group. |
-| `onPlanComplete` | Firestore write: `userPlans.isComplete = true` | Awards +500 XP to all group members. Triggers group celebration. Checks plan-complete achievements. |
+| `onReadingComplete` | Firestore write: `userPlans.todayRead = true` (client writes this; trust model: no server-side reading duration validation — accepted design decision, see Section 15) | Updates streak server-side (authoritative), awards XP (xpTotal + xpBalance), updates `/bookProgress`, calls `onAchievementCheck`, updates `groups/{id}/members/{userId}.todayRead`, triggers group activity FCM |
+| `dailyStreakCheck` | Scheduled: once per minute, filters users where `timezone` puts them at midnight ± 1min | Users who haven't read → consume streak freeze if available → else reset streak to 0. Sends at-risk push 2hrs before user's midnight if unread. |
+| `onNudgeSent` | Firestore write: new nudge doc | Validates rate limit (max 1 nudge per sender→recipient pair per 24h, max 5 nudges sent per user per day — rejects write if exceeded). Delivers FCM to nudged user. Awards +15 XP to sender if recipient reads within 24h. Auto-deletes nudge after 24h. |
+| `onAchievementCheck` | Called by `onReadingComplete` and `weeklyLeaderboardReset` | Evaluates all achievement conditions against current user state. Writes to `/achievements` if newly earned. Sends celebration FCM. |
+| `weeklyLeaderboardReset` | Scheduled: Sunday midnight UTC | For each group: snapshots `weeklyXpBoard`, identifies top scorer, sends "this week's top reader" FCM to group, calls `onAchievementCheck` for top scorer (Group MVP badge), resets all `weeklyXpBoard` values to 0. |
+| `onPlanComplete` | Firestore write: `userPlans.isComplete = true` | Awards +500 XP to the completing user only (not all group members). Checks if all group members are now complete — if so, triggers group celebration FCM to all members. Checks plan-complete achievements. |
 | `xpStorePurchase` | Callable function | Validates purchase (sufficient xpBalance), deducts xpBalance, grants item (freeze or cosmetic). Atomic transaction. |
+| `onUserLeaveGroup` | Callable function | Removes userId from `groups/{id}.memberIds` and `groups/{id}/members/{userId}`. Sets `userPlans.groupId = null` for any active plan in that group (plan continues as solo). Does not reset group streak — absence of the member is simply not counted going forward. Sends system message to group chat. |
 
 ---
 
@@ -209,17 +214,19 @@ Character: a small, expressive lamb. Animated via Lottie.
 | On fire | Streak 100+ days |
 | Outfit displayed | Active cosmetic from XP store |
 
-### Achievements (Phase 1 — 8 badges)
-| Badge | Trigger |
-|---|---|
-| First Flame | 7-day streak |
-| Month of Faith | 30-day streak |
-| Better Together | Join first group |
-| Keeper's Nudge | Nudge 10 friends (who read) |
-| In The Beginning | Read all of Genesis |
-| Red Letters | Read all 4 Gospels |
-| Group MVP | Top reader in a group for 1 week |
-| Multiplier | Invite 3 friends who join |
+### Achievements (Phase 1 — 7 badges)
+| Badge | Trigger | Evaluated by |
+|---|---|---|
+| First Flame | 7-day streak | `onAchievementCheck` |
+| Month of Faith | 30-day streak | `onAchievementCheck` |
+| Better Together | Join first group | `onAchievementCheck` |
+| Keeper's Nudge | Nudge 10 friends (who read within 24h) | `onAchievementCheck` via nudge XP counter |
+| In The Beginning | All chapters of Genesis in `/bookProgress/Genesis` | `onAchievementCheck` |
+| Red Letters | All chapters of Matthew, Mark, Luke, John in `/bookProgress` | `onAchievementCheck` |
+| Group MVP | Top scorer in `weeklyXpBoard` at Sunday reset | `weeklyLeaderboardReset` → `onAchievementCheck` |
+
+**Phase 2 addition:**
+| Multiplier | `invitesConverted >= 3` on referring user's doc | `onAchievementCheck` after new user registration |
 
 ---
 
@@ -276,7 +283,30 @@ Meet the Lamb → Set daily goal → Pick first plan → Find friends (invite/sk
 
 ---
 
-## 9. Notifications & Widgets
+## 9. Edge Case Behaviours
+
+### Group With No Active Plan
+`activePlanId` can be null. When null: the Group detail screen shows an empty state ("No plan yet — start one together") with a CTA to browse plans. The Home screen group check-in card is hidden for that group. The group still exists and chat is accessible.
+
+### User Leaving a Group
+Handled by `onUserLeaveGroup` callable function. The departing user's `userPlan.groupId` is set to null — their plan continues as a solo plan. They are removed from `memberIds` and the `members` subcollection. A system message appears in group chat ("Rosh left the group"). The group streak is not reset. The leaving user's `todayRead` is removed from the check-in view.
+
+### Friends Leaderboard vs Group Leaderboard
+These are two distinct leaderboards:
+- **Group XP leaderboard:** Lives on the Groups tab. Reads `weeklyXpBoard` from each group doc. Shows only members of that specific group. Reset Sunday midnight UTC.
+- **Friends XP leaderboard:** Lives on the Profile tab. Client-side query: fetch `xpTotal` from all `friendIds` user docs + self, sort descending. Shows all-time total XP. No reset — cumulative ranking.
+
+### Trust Model for Reading
+The server does not validate that a user spent time reading before marking `todayRead = true`. This is an accepted design decision — the app is built on good faith. Adding session duration checks would add friction without meaningfully changing behaviour for the target audience.
+
+### Nudge Rate Limits
+- Max 1 nudge per sender→recipient pair per 24-hour window
+- Max 5 nudges sent per user per day total
+- Enforced server-side in `onNudgeSent` by querying existing nudge docs before writing
+
+---
+
+## 10. Notifications & Widgets
 
 ### Push Notifications (FCM)
 | Type | Trigger |
@@ -297,7 +327,7 @@ All deep links open to the correct screen (today's chapter, group, profile).
 
 ---
 
-## 10. Bible Content Strategy
+## 11. Bible Content Strategy
 
 1. **Bundled in binary:** KJV + WEB (public domain). Zero network dependency for these.
 2. **API.Bible:** Primary source for all other translations. Fetch on first request, cache in Hive for offline use. Free tier: 5k req/day. Paid tier for scale.
@@ -306,19 +336,19 @@ All deep links open to the correct screen (today's chapter, group, profile).
 
 ---
 
-## 11. Offline Strategy
+## 12. Offline Strategy
 
 The app must work with no internet connection for core reading functionality.
 
 - KJV + WEB: always available (bundled)
 - Other translations: cached in Hive after first fetch, available offline thereafter
 - User annotations: written to Hive first (optimistic), synced to Firestore when online
-- Streak + XP: calculated client-side optimistically, confirmed by Cloud Function on next sync
+- Streak + XP: display values read from Firestore (no client-side writes to streak fields). If offline, UI shows last known values. Cloud Function is sole authoritative writer for streak and XP. A reading completed offline queues the `userPlans.todayRead = true` write; the Cloud Function processes it on reconnect.
 - Group check-in: queued locally, synced on reconnect
 
 ---
 
-## 12. Verse Image Sharing
+## 13. Verse Image Sharing
 
 Tapping "share" on any verse generates a branded image card:
 - Verse text + reference
@@ -329,7 +359,7 @@ Tapping "share" on any verse generates a branded image card:
 
 ---
 
-## 13. Haptic Feedback
+## 14. Haptic Feedback
 
 Every meaningful action triggers a haptic pulse calibrated to action weight:
 
@@ -345,10 +375,10 @@ Every meaningful action triggers a haptic pulse calibrated to action weight:
 
 ---
 
-## 14. Delivery Phases
+## 15. Delivery Phases
 
 ### Phase 1 — The Core Loop
-Everything needed for the daily habit: Bible reader (KJV + WEB offline, API.Bible for others), chapter reader with highlights + notes, streaks, XP (earn + spend), streak freezes, Lamb mascot with 6 states + 2 outfits, 5 pre-built plans, groups (create/join), daily check-in feed, one-tap nudge, weekly friends leaderboard, group streak, all push notifications, home + lock screen widgets, Duolingo-style onboarding, Sign in with Apple + Google, profile with stats + heatmap, 8 achievements, verse image sharing, offline-first, deep links, haptics throughout.
+Everything needed for the daily habit: Bible reader (KJV + WEB offline, API.Bible for others), chapter reader with highlights + notes, streaks, XP (earn + spend), streak freezes, Lamb mascot with all 8 states + 2 outfits, 5 pre-built plans, groups (create/join/leave), daily check-in feed, one-tap nudge (rate-limited), weekly leaderboard within each group, weekly friends leaderboard (across all friends, queried client-side from `friendIds`), group streak, all push notifications, home + lock screen widgets, Duolingo-style onboarding (captures timezone during setup), Sign in with Apple + Google, profile with stats + heatmap, 7 achievements, verse image sharing, offline-first, deep links, haptics throughout.
 
 ### Phase 2 — Depth
 Custom plan creation, audio Bible (TTS + recorded), full group chat, 20 pre-built plans, full achievement set (12 badges), 10 mascot outfits in XP store, reading history per book, iPad two-panel layout, accessibility (dynamic type, VoiceOver/TalkBack), rich verse-of-day notification, multiple simultaneous plans, export notes, Lottie-animated mascot celebrations, App Store + Play Store launch.
@@ -361,7 +391,7 @@ Paid tiers, devotional content licensing, public social feed, user-generated com
 
 ---
 
-## 15. Key Design Decisions & Rationale
+## 16. Key Design Decisions & Rationale
 
 | Decision | Rationale |
 |---|---|
@@ -369,7 +399,9 @@ Paid tiers, devotional content licensing, public social feed, user-generated com
 | XP is a currency, not just a score | Buying streak freezes + mascot outfits gives XP purpose and creates meaningful spending decisions. |
 | Groups max 20 people | Accountability works at small scale. Large groups dilute the "my friends can see me" pressure. |
 | Community-first (not public feed) | Avoids toxic social media patterns. Intimacy drives accountability. |
-| Streak logic server-side only | Prevents device clock manipulation. Trust must be maintained for leaderboards to feel fair. |
+| Streak logic server-side only | Prevents device clock manipulation. Trust must be maintained for leaderboards to feel fair. Client displays last-known values when offline; Cloud Function is sole writer. |
+| No reading duration validation | Good-faith trust model. Target audience doesn't need enforcement friction. If abuse becomes a problem it can be added later. |
+| Multiplier achievement deferred to Phase 2 | Requires referral tracking schema (referredBy, invitesConverted). Not worth the complexity in Phase 1. |
 | KJV + WEB bundled | Guarantees offline reading from day 1 with no API costs. |
 | Lamb mascot | Universal, gentle, biblically resonant. Cries when you break streak — more emotionally effective than a neutral character. |
 | Free forever | Mission-driven. Removes paywall friction from forming habits. |
