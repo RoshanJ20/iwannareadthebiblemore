@@ -51,8 +51,8 @@ abstract class AppTheme {
           error: AppColors.error,
         ),
         textTheme: AppTypography.textTheme.apply(
-          bodyColor: const Color(0xFF1A1A2E),
-          displayColor: const Color(0xFF1A1A2E),
+          bodyColor: AppColors.surface,
+          displayColor: AppColors.surface,
         ),
         useMaterial3: true,
       );
