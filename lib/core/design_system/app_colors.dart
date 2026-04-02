@@ -16,13 +16,13 @@ abstract class AppColors {
   static const Color streakGold = Color(0xFFF8C537);
   static const Color streakDiamond = Color(0xFF4CC9F0);
   static const Color success = Color(0xFF43E97B);
-  static const Color error = Color(0xFFE94560);
+  static const Color error = streakRed; // intentionally same hue; update independently if brand/error diverge
 
   // Text
   static const Color textPrimary = Color(0xFFE8EAF0);
   static const Color textSecondary = Color(0xFFA8B2D8);
   static const Color textMuted = Color(0xFF555577);
 
-  // XP gold
-  static const Color xpGold = Color(0xFFF8C537);
+  // XP gold — intentionally same hue as streakGold; update independently if XP branding diverges
+  static const Color xpGold = streakGold;
 }
