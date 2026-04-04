@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/auth/auth_providers.dart';
+import '../../../core/design_system/app_colors.dart';
+import '../../../core/design_system/haptics_service.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -7,25 +10,82 @@ class LoginScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('iwannareadthebiblemore',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 32),
-            // Full sign-in UI wired in Plan 6 (Onboarding).
-            ElevatedButton(
-              onPressed: () {}, // wired in onboarding plan
-              child: const Text('Sign in with Google'),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Sign in with Apple'),
-            ),
-          ],
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🐑',
+                  style: TextStyle(fontSize: 72)),
+              const SizedBox(height: 16),
+              const Text(
+                'iwannareadthebiblemore',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Read daily. Build streaks. Go together.',
+                style: TextStyle(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 48),
+              _SignInButton(
+                key: const Key('google_sign_in_button'),
+                label: 'Continue with Google',
+                onPressed: () async {
+                  await HapticsService.medium();
+                  await ref
+                      .read(authRepositoryProvider)
+                      .signInWithGoogle();
+                },
+              ),
+              const SizedBox(height: 12),
+              _SignInButton(
+                key: const Key('apple_sign_in_button'),
+                label: 'Continue with Apple',
+                onPressed: () async {
+                  await HapticsService.medium();
+                  await ref
+                      .read(authRepositoryProvider)
+                      .signInWithApple();
+                },
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _SignInButton extends StatelessWidget {
+  const _SignInButton({super.key, required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textPrimary,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
     );
   }

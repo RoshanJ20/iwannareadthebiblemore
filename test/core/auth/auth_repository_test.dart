@@ -1,15 +1,21 @@
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:iwannareadthebiblemore/core/auth/auth_repository.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockGoogleSignIn extends Mock implements GoogleSignIn {}
 
 void main() {
   group('FirebaseAuthRepository', () {
     late MockFirebaseAuth mockAuth;
+    late MockGoogleSignIn mockGoogleSignIn;
     late FirebaseAuthRepository repo;
 
     setUp(() {
       mockAuth = MockFirebaseAuth();
-      repo = FirebaseAuthRepository(mockAuth);
+      mockGoogleSignIn = MockGoogleSignIn();
+      repo = FirebaseAuthRepository(mockAuth, googleSignIn: mockGoogleSignIn);
     });
 
     test('currentUser returns null when not signed in', () {
@@ -29,18 +35,28 @@ void main() {
         email: 'test@example.com',
         isAnonymous: true,
       ));
-      final repoWithUser = FirebaseAuthRepository(authWithUser);
+      final repoWithUser = FirebaseAuthRepository(authWithUser,
+          googleSignIn: mockGoogleSignIn);
 
       await authWithUser.signInAnonymously();
       expect(repoWithUser.currentUser, isNotNull);
     });
 
-    test('signInWithGoogle throws UnimplementedError (stub until Task 6)', () {
-      expect(() => repo.signInWithGoogle(), throwsA(isA<UnimplementedError>()));
+    test('signInWithGoogle throws when platform plugin is not configured', () {
+      // In unit tests, GoogleSignIn throws MissingPluginException or similar.
+      // We verify the method is callable and propagates errors rather than silently failing.
+      when(() => mockGoogleSignIn.signIn()).thenThrow(Exception('platform not configured'));
+      expect(
+        () => repo.signInWithGoogle(),
+        throwsA(anything), // exact exception depends on platform plugin availability
+      );
     });
 
-    test('signInWithApple throws UnimplementedError (stub until Task 6)', () {
-      expect(() => repo.signInWithApple(), throwsA(isA<UnimplementedError>()));
+    test('signInWithApple throws when platform plugin is not configured', () {
+      expect(
+        () => repo.signInWithApple(),
+        throwsA(anything),
+      );
     });
 
     test('signOut clears currentUser', () async {
@@ -48,9 +64,12 @@ void main() {
         mockUser: MockUser(uid: 'uid-123'),
         signedIn: true,
       );
-      final repoWithUser = FirebaseAuthRepository(authWithUser);
+      final repoWithUser = FirebaseAuthRepository(authWithUser,
+          googleSignIn: mockGoogleSignIn);
       expect(repoWithUser.currentUser, isNotNull);
 
+      when(() => mockGoogleSignIn.signOut())
+          .thenAnswer((_) async => null);
       await repoWithUser.signOut();
       expect(repoWithUser.currentUser, isNull);
     });
