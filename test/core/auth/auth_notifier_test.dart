@@ -48,5 +48,30 @@ void main() {
       final user = await container.read(authNotifierProvider.future);
       expect(user?.uid, 'uid-abc');
     });
+
+    test('signOut transitions state to unauthenticated', () async {
+      final mockAuth = MockFirebaseAuth(
+        mockUser: MockUser(uid: 'uid-xyz'),
+        signedIn: true,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(
+            FirebaseAuthRepository(mockAuth),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Confirm authenticated first
+      final user = await container.read(authNotifierProvider.future);
+      expect(user?.uid, 'uid-xyz');
+
+      // Sign out via the notifier
+      await container.read(authNotifierProvider.notifier).signOut();
+      await container.read(authNotifierProvider.future);
+
+      expect(container.read(authNotifierProvider).value, isNull);
+    });
   });
 }

@@ -5,19 +5,10 @@ import 'auth_providers.dart';
 
 class AuthNotifier extends AsyncNotifier<User?> {
   @override
-  Future<User?> build() async {
-    final repo = ref.watch(authRepositoryProvider);
-    // Keep state in sync with Firebase auth stream.
-    // _authStreamProvider is a StreamProvider so its value is AsyncValue<User?>.
-    ref.listen<AsyncValue<User?>>(
-      _authStreamProvider,
-      (_, next) => state = next.when(
-        data: AsyncData.new,
-        loading: () => const AsyncLoading(),
-        error: AsyncError.new,
-      ),
-    );
-    return repo.currentUser;
+  Future<User?> build() {
+    // Stream is the single source of truth. Watching _authStreamProvider
+    // means this notifier rebuilds automatically on every auth state change.
+    return ref.watch(_authStreamProvider.future);
   }
 
   Future<void> signOut() async {
