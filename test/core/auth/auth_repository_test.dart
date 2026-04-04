@@ -20,9 +20,9 @@ void main() {
       expect(repo.authStateChanges, emits(isNull));
     });
 
-    test('signInWithGoogle returns a User on success', () async {
-      // MockUser must have isAnonymous: true to be compatible with signInAnonymously
-      // in firebase_auth_mocks 0.14.x
+    test('currentUser is non-null after any sign-in event', () async {
+      // Uses signInAnonymously to trigger mock state change (Google/Apple
+      // sign-in require platform plugins not available in unit tests).
       final authWithUser = MockFirebaseAuth(mockUser: MockUser(
         uid: 'uid-123',
         displayName: 'Test User',
@@ -31,9 +31,16 @@ void main() {
       ));
       final repoWithUser = FirebaseAuthRepository(authWithUser);
 
-      // Sign in anonymously to simulate auth mock returning a user
       await authWithUser.signInAnonymously();
       expect(repoWithUser.currentUser, isNotNull);
+    });
+
+    test('signInWithGoogle throws UnimplementedError (stub until Task 6)', () {
+      expect(() => repo.signInWithGoogle(), throwsA(isA<UnimplementedError>()));
+    });
+
+    test('signInWithApple throws UnimplementedError (stub until Task 6)', () {
+      expect(() => repo.signInWithApple(), throwsA(isA<UnimplementedError>()));
     });
 
     test('signOut clears currentUser', () async {
