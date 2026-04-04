@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'core/design_system/app_theme.dart';
 import 'core/navigation/app_router.dart';
 
@@ -11,9 +12,13 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppState extends ConsumerState<App> {
-  late final _router = AppRouter.create(
-    ProviderScope.containerOf(context),
-  );
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.create(ProviderScope.containerOf(context));
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +20,11 @@ class AppRouter {
       initialLocation: Routes.home,
       refreshListenable: authListenable,
       redirect: (context, state) {
-        final user = container.read(authNotifierProvider).valueOrNull;
+        final authState = container.read(authNotifierProvider);
+        // Hold current location while auth is resolving — re-evaluated on next notify.
+        if (authState.isLoading) return null;
+
+        final user = authState.valueOrNull;
         final isLoggingIn = state.matchedLocation == Routes.login;
 
         if (user == null && !isLoggingIn) return Routes.login;
@@ -59,14 +64,17 @@ class AppRouter {
 /// Makes GoRouter re-evaluate redirects when auth state changes.
 class _AuthListenable extends ChangeNotifier {
   _AuthListenable(ProviderContainer container) {
-    container.listen(
+    _sub = container.listen(
       authNotifierProvider,
       (_, __) => notifyListeners(),
     );
   }
-}
 
-final routerProvider = Provider<GoRouter>((ref) {
-  // Accessed via ref in App widget; not used in tests (tests call AppRouter.create directly).
-  throw UnimplementedError('routerProvider must be overridden in tests');
-});
+  late final ProviderSubscription<AsyncValue<User?>> _sub;
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
+}
