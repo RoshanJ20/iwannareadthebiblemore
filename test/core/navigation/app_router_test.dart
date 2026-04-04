@@ -17,6 +17,7 @@ void main() {
           FirebaseAuthRepository(mockAuth),
         ),
       ]);
+      addTearDown(container.dispose);
 
       final router = AppRouter.create(container);
       await tester.pumpWidget(
@@ -41,6 +42,7 @@ void main() {
           FirebaseAuthRepository(mockAuth),
         ),
       ]);
+      addTearDown(container.dispose);
 
       final router = AppRouter.create(container);
       await tester.pumpWidget(
