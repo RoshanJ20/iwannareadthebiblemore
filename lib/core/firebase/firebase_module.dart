@@ -9,8 +9,8 @@ class FirebaseModule {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Route Flutter errors to Crashlytics in release mode
-    if (!kDebugMode) {
+    // Route Flutter errors to Crashlytics in release mode only (not profile)
+    if (kReleaseMode) {
       FlutterError.onError =
           FirebaseCrashlytics.instance.recordFlutterFatalError;
       PlatformDispatcher.instance.onError = (error, stack) {
