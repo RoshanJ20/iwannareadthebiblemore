@@ -2,13 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:iwannareadthebiblemore/core/auth/auth_repository.dart';
 import 'package:iwannareadthebiblemore/core/auth/auth_notifier.dart';
 import 'package:iwannareadthebiblemore/core/auth/auth_providers.dart';
 import 'package:mocktail/mocktail.dart';
-
-class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+import '../../helpers/mocks.dart';
 
 void main() {
   group('AuthNotifier', () {

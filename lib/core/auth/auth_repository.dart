@@ -29,6 +29,11 @@ class FirebaseAuthRepository implements AuthRepository {
     if (googleUser == null) return null; // user cancelled
 
     final googleAuth = await googleUser.authentication;
+    // Both tokens can theoretically be null if the Google sign-in plugin
+    // returns an incomplete result — guard before creating an invalid credential.
+    if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+      throw StateError('Google authentication returned no tokens');
+    }
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
@@ -38,6 +43,9 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<UserCredential?> signInWithApple() async {
+    // Note: unlike Google (which returns null on cancel), Apple throws
+    // SignInWithAppleAuthorizationException with code .canceled on user dismissal.
+    // Callers should catch that specifically and treat it as a no-op.
     final appleCredential = await SignInWithApple.getAppleIDCredential(
       scopes: [
         AppleIDAuthorizationScopes.email,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../core/auth/auth_providers.dart';
 import '../../../core/design_system/app_colors.dart';
 import '../../../core/design_system/haptics_service.dart';
@@ -41,9 +42,16 @@ class LoginScreen extends ConsumerWidget {
                 label: 'Continue with Google',
                 onPressed: () async {
                   await HapticsService.medium();
-                  await ref
-                      .read(authRepositoryProvider)
-                      .signInWithGoogle();
+                  try {
+                    await ref.read(authRepositoryProvider).signInWithGoogle();
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Sign-in failed. Please try again.')),
+                      );
+                    }
+                  }
                 },
               ),
               const SizedBox(height: 12),
@@ -52,9 +60,25 @@ class LoginScreen extends ConsumerWidget {
                 label: 'Continue with Apple',
                 onPressed: () async {
                   await HapticsService.medium();
-                  await ref
-                      .read(authRepositoryProvider)
-                      .signInWithApple();
+                  try {
+                    await ref.read(authRepositoryProvider).signInWithApple();
+                  } on SignInWithAppleAuthorizationException catch (e) {
+                    // User cancelled — not an error; no feedback needed
+                    if (e.code == AuthorizationErrorCode.canceled) return;
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Sign-in failed. Please try again.')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Sign-in failed. Please try again.')),
+                      );
+                    }
+                  }
                 },
               ),
             ],
@@ -69,14 +93,14 @@ class _SignInButton extends StatelessWidget {
   const _SignInButton({super.key, required this.label, required this.onPressed});
 
   final String label;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed; // async — caller handles errors
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: () => onPressed(),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.surface,
           foregroundColor: AppColors.textPrimary,
