@@ -12,12 +12,14 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppState extends ConsumerState<App> {
-  late final GoRouter _router;
+  GoRouter? _router;
 
   @override
-  void initState() {
-    super.initState();
-    _router = AppRouter.create(ProviderScope.containerOf(context));
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ProviderScope.containerOf requires an inherited widget lookup —
+    // must be called in didChangeDependencies, not initState.
+    _router ??= AppRouter.create(ProviderScope.containerOf(context));
   }
 
   @override
@@ -27,7 +29,7 @@ class _AppState extends ConsumerState<App> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.dark,
-      routerConfig: _router,
+      routerConfig: _router!,
       debugShowCheckedModeBanner: false,
     );
   }
