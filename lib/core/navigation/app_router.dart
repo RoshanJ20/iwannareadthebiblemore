@@ -7,6 +7,10 @@ import '../../features/shell/presentation/shell_screen.dart';
 import '../../features/shell/presentation/home_screen.dart';
 import '../../features/shell/presentation/login_screen.dart';
 import '../../features/bible/presentation/screens/bible_screen.dart';
+import '../../features/bible/presentation/screens/chapter_list_screen.dart';
+import '../../features/bible/presentation/screens/chapter_reader_screen.dart';
+import '../../features/bible/presentation/screens/bible_search_screen.dart';
+import '../../features/bible/presentation/screens/bookmarks_screen.dart';
 import '../../features/groups/presentation/screens/groups_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -43,7 +47,37 @@ class AppRouter {
               GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen()),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: Routes.read, builder: (_, __) => const BibleScreen()),
+              GoRoute(
+                path: Routes.read,
+                builder: (_, __) => const BibleScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (_, __) => const BibleSearchScreen(),
+                  ),
+                  GoRoute(
+                    path: 'bookmarks',
+                    builder: (_, __) => const BookmarksScreen(),
+                  ),
+                  GoRoute(
+                    path: ':bookId',
+                    builder: (_, state) => ChapterListScreen(
+                      bookId: state.pathParameters['bookId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: ':chapterNumber',
+                        builder: (_, state) => ChapterReaderScreen(
+                          bookId: state.pathParameters['bookId']!,
+                          chapterNumber: int.parse(
+                            state.pathParameters['chapterNumber']!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(path: Routes.groups, builder: (_, __) => const GroupsScreen()),

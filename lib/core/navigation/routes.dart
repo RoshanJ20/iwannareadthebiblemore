@@ -5,4 +5,8 @@ abstract class Routes {
   static const groups = '/groups';
   static const plans = '/plans';
   static const profile = '/profile';
+
+  // Bible sub-routes
+  static const bibleSearch = '/read/search';
+  static const bibleBookmarks = '/read/bookmarks';
 }
