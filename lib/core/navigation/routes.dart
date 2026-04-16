@@ -5,6 +5,8 @@ abstract class Routes {
   static const groups = '/groups';
   static const plans = '/plans';
   static const profile = '/profile';
+  static const achievements = '/profile/achievements';
+  static const xpStore = '/profile/xp-store';
 
   static const chapterList = '/read/book/:bookId';
   static const chapterReader = '/read/book/:bookId/chapter/:chapterNumber';
