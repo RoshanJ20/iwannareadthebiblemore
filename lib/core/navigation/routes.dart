@@ -7,6 +7,8 @@ abstract class Routes {
   static const profile = '/profile';
   static const achievements = '/profile/achievements';
   static const xpStore = '/profile/xp-store';
+  static const settings = '/profile/settings';
+  static const notificationSettings = '/profile/settings/notifications';
 
   static const chapterList = '/read/book/:bookId';
   static const chapterReader = '/read/book/:bookId/chapter/:chapterNumber';

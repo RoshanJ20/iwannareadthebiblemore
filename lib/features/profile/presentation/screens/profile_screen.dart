@@ -100,6 +100,12 @@ class _ProfileBody extends ConsumerWidget {
             label: 'XP Store',
             onTap: () => context.push(Routes.xpStore),
           ),
+          const SizedBox(height: 12),
+          _NavTile(
+            icon: Icons.settings_outlined,
+            label: 'Settings',
+            onTap: () => context.push(Routes.settings),
+          ),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,

@@ -18,6 +18,8 @@ import '../../features/groups/presentation/screens/join_group_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
 import '../../features/groups/presentation/screens/plan_detail_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/notifications/presentation/screens/notification_settings_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../features/gamification/presentation/screens/xp_store_screen.dart';
 import 'routes.dart';
@@ -131,6 +133,17 @@ class AppRouter {
                   GoRoute(
                     path: 'xp-store',
                     builder: (_, __) => const XpStoreScreen(),
+                  ),
+                  GoRoute(
+                    path: 'settings',
+                    builder: (_, __) => const SettingsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'notifications',
+                        builder: (_, __) =>
+                            const NotificationSettingsScreen(),
+                      ),
+                    ],
                   ),
                 ],
               ),
