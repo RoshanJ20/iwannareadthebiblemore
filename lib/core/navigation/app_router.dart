@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../auth/auth_notifier.dart';
+import '../../features/onboarding/presentation/screens/onboarding_shell.dart';
 import '../../features/shell/presentation/shell_screen.dart';
 import '../../features/shell/presentation/home_screen.dart';
 import '../../features/shell/presentation/login_screen.dart';
@@ -37,15 +39,32 @@ class AppRouter {
 
         final user = authState.valueOrNull;
         final isLoggingIn = state.matchedLocation == Routes.login;
+        final isOnboarding =
+            state.matchedLocation.startsWith(Routes.onboarding);
 
         if (user == null && !isLoggingIn) return Routes.login;
-        if (user != null && isLoggingIn) return Routes.home;
+        if (user != null && isLoggingIn) {
+          return _isOnboardingComplete() ? Routes.home : Routes.onboarding;
+        }
+        if (user != null && isOnboarding && _isOnboardingComplete()) {
+          return Routes.home;
+        }
+        if (user != null &&
+            !isLoggingIn &&
+            !isOnboarding &&
+            !_isOnboardingComplete()) {
+          return Routes.onboarding;
+        }
         return null;
       },
       routes: [
         GoRoute(
           path: Routes.login,
           builder: (_, __) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: Routes.onboarding,
+          builder: (_, __) => const OnboardingShell(),
         ),
         StatefulShellRoute.indexedStack(
           builder: (_, __, shell) => ShellScreen(shell: shell),
@@ -152,6 +171,15 @@ class AppRouter {
         ),
       ],
     );
+  }
+}
+
+bool _isOnboardingComplete() {
+  try {
+    final box = Hive.box('settings');
+    return box.get('onboarding_complete', defaultValue: false) as bool;
+  } catch (_) {
+    return false;
   }
 }
 
