@@ -12,7 +12,11 @@ import '../../features/bible/presentation/screens/chapter_reader_screen.dart';
 import '../../features/bible/presentation/screens/search_screen.dart';
 import '../../features/bible/presentation/screens/bookmarks_screen.dart';
 import '../../features/groups/presentation/screens/groups_screen.dart';
+import '../../features/groups/presentation/screens/group_detail_screen.dart';
+import '../../features/groups/presentation/screens/create_group_screen.dart';
+import '../../features/groups/presentation/screens/join_group_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
+import '../../features/groups/presentation/screens/plan_detail_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../features/gamification/presentation/screens/xp_store_screen.dart';
@@ -27,7 +31,6 @@ class AppRouter {
       refreshListenable: authListenable,
       redirect: (context, state) {
         final authState = container.read(authNotifierProvider);
-        // Hold current location while auth is resolving — re-evaluated on next notify.
         if (authState.isLoading) return null;
 
         final user = authState.valueOrNull;
@@ -81,10 +84,40 @@ class AppRouter {
               ),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: Routes.groups, builder: (_, __) => const GroupsScreen()),
+              GoRoute(
+                path: Routes.groups,
+                builder: (_, __) => const GroupsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'create',
+                    builder: (_, __) => const CreateGroupScreen(),
+                  ),
+                  GoRoute(
+                    path: 'join',
+                    builder: (_, __) => const JoinGroupScreen(),
+                  ),
+                  GoRoute(
+                    path: ':groupId',
+                    builder: (_, state) => GroupDetailScreen(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                ],
+              ),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: Routes.plans, builder: (_, __) => const PlansScreen()),
+              GoRoute(
+                path: Routes.plans,
+                builder: (_, __) => const PlansScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':planId',
+                    builder: (_, state) => PlanDetailScreen(
+                      planId: state.pathParameters['planId']!,
+                    ),
+                  ),
+                ],
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
