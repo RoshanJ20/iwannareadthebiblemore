@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'core/firebase/firebase_module.dart';
 import 'features/notifications/data/services/fcm_service.dart';
 import 'app.dart';
@@ -7,6 +8,8 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseModule.initialise();
+  await Hive.initFlutter();
+  await Hive.openBox('settings');
 
   // Register the background message handler before the app starts.
   // This is a top-level requirement of firebase_messaging.
