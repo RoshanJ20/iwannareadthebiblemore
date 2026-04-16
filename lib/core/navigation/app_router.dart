@@ -11,6 +11,8 @@ import '../../features/bible/presentation/screens/chapter_list_screen.dart';
 import '../../features/bible/presentation/screens/chapter_reader_screen.dart';
 import '../../features/bible/presentation/screens/bible_search_screen.dart';
 import '../../features/bible/presentation/screens/bookmarks_screen.dart';
+import '../../features/gamification/presentation/screens/achievements_screen.dart';
+import '../../features/gamification/presentation/screens/xp_store_screen.dart';
 import '../../features/groups/presentation/screens/groups_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -39,6 +41,14 @@ class AppRouter {
         GoRoute(
           path: Routes.login,
           builder: (_, __) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: Routes.achievements,
+          builder: (_, __) => const AchievementsScreen(),
+        ),
+        GoRoute(
+          path: Routes.store,
+          builder: (_, __) => const XpStoreScreen(),
         ),
         StatefulShellRoute.indexedStack(
           builder: (_, __, shell) => ShellScreen(shell: shell),

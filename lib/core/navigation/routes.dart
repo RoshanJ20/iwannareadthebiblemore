@@ -9,4 +9,8 @@ abstract class Routes {
   // Bible sub-routes
   static const bibleSearch = '/read/search';
   static const bibleBookmarks = '/read/bookmarks';
+
+  // Gamification
+  static const achievements = '/achievements';
+  static const store = '/store';
 }
