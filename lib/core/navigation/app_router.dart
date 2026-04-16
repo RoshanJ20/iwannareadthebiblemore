@@ -14,7 +14,12 @@ import '../../features/bible/presentation/screens/bookmarks_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../features/gamification/presentation/screens/xp_store_screen.dart';
 import '../../features/groups/presentation/screens/groups_screen.dart';
+import '../../features/groups/presentation/screens/create_group_screen.dart';
+import '../../features/groups/presentation/screens/join_group_screen.dart';
+import '../../features/groups/presentation/screens/group_detail_screen.dart';
+import '../../features/groups/presentation/screens/leaderboard_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
+import '../../features/groups/presentation/screens/plan_detail_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import 'routes.dart';
 
@@ -49,6 +54,31 @@ class AppRouter {
         GoRoute(
           path: Routes.store,
           builder: (_, __) => const XpStoreScreen(),
+        ),
+        GoRoute(
+          path: '/groups/create',
+          builder: (_, __) => const CreateGroupScreen(),
+        ),
+        GoRoute(
+          path: '/groups/join',
+          builder: (_, __) => const JoinGroupScreen(),
+        ),
+        GoRoute(
+          path: '/groups/:groupId',
+          builder: (_, state) =>
+              GroupDetailScreen(groupId: state.pathParameters['groupId']!),
+          routes: [
+            GoRoute(
+              path: 'leaderboard',
+              builder: (_, state) =>
+                  LeaderboardScreen(groupId: state.pathParameters['groupId']!),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/plans/:planId',
+          builder: (_, state) =>
+              PlanDetailScreen(planId: state.pathParameters['planId']!),
         ),
         StatefulShellRoute.indexedStack(
           builder: (_, __, shell) => ShellScreen(shell: shell),

@@ -7,6 +7,8 @@ import '../../gamification/gamification_providers.dart';
 import '../../gamification/presentation/widgets/lamb_mascot_widget.dart';
 import '../../gamification/presentation/widgets/streak_widget.dart';
 import '../../gamification/presentation/widgets/xp_widget.dart';
+import '../../groups/presentation/providers/groups_providers.dart';
+import '../../groups/presentation/widgets/group_check_in_card.dart';
 import '../../../core/design_system/app_colors.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -15,6 +17,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(userStatsProvider);
+    final checkInAsync = ref.watch(groupCheckInProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('iwannareadthebiblemore'),
@@ -52,6 +55,15 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 16),
+            checkInAsync.when(
+              data: (data) => data != null
+                  ? GroupCheckInCard(
+                      group: data.group, members: data.members)
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             const SizedBox(height: 24),
             Card(
