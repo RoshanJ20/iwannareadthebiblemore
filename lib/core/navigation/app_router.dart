@@ -14,6 +14,8 @@ import '../../features/bible/presentation/screens/bookmarks_screen.dart';
 import '../../features/groups/presentation/screens/groups_screen.dart';
 import '../../features/groups/presentation/screens/plans_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/gamification/presentation/screens/achievements_screen.dart';
+import '../../features/gamification/presentation/screens/xp_store_screen.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -85,7 +87,20 @@ class AppRouter {
               GoRoute(path: Routes.plans, builder: (_, __) => const PlansScreen()),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: Routes.profile, builder: (_, __) => const ProfileScreen()),
+              GoRoute(
+                path: Routes.profile,
+                builder: (_, __) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'achievements',
+                    builder: (_, __) => const AchievementsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'xp-store',
+                    builder: (_, __) => const XpStoreScreen(),
+                  ),
+                ],
+              ),
             ]),
           ],
         ),
