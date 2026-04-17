@@ -67,4 +67,6 @@ flutter:
   assets:
     - assets/lottie/
     - assets/bible/
+    - assets/bible/kjv/
+    - assets/bible/web/
     - assets/images/
