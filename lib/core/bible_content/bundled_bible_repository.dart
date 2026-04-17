@@ -109,8 +109,6 @@ class BundledBibleRepository implements BibleContentRepository {
       }
 
       return verses;
-    } on FlutterError {
-      return [];
     } catch (_) {
       return [];
     }

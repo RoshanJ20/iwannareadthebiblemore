@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../../core/auth/auth_notifier.dart';
+import '../../../../core/bible_content/bible_content_providers.dart';
 import '../../../../core/design_system/app_colors.dart';
 import '../../../../core/navigation/routes.dart';
 
@@ -32,7 +34,6 @@ class SettingsScreen extends ConsumerWidget {
             label: 'Reading',
             trailing: const _ComingSoonChip(),
             onTap: () {
-              // Stub: future reading preferences (translation, font size)
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Reading preferences — coming soon'),
@@ -41,6 +42,7 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
           ),
+          _ApiBibleKeyTile(),
           const SizedBox(height: 16),
           _SectionHeader(label: 'Account'),
           _SettingsTile(
@@ -85,7 +87,6 @@ class SettingsScreen extends ConsumerWidget {
             labelColor: AppColors.error,
             trailing: const _ComingSoonChip(),
             onTap: () {
-              // Stub: account deletion requires Cloud Function + re-auth
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Account deletion — coming soon'),
@@ -101,6 +102,121 @@ class SettingsScreen extends ConsumerWidget {
               'App is dark-only. Light mode is not available.',
               style: TextStyle(color: AppColors.textMuted, fontSize: 12),
               textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ApiBibleKeyTile extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_ApiBibleKeyTile> createState() => _ApiBibleKeyTileState();
+}
+
+class _ApiBibleKeyTileState extends ConsumerState<_ApiBibleKeyTile> {
+  late final TextEditingController _controller;
+  bool _obscure = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final current = ref.read(apiBibleKeyProvider);
+    _controller = TextEditingController(text: current);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final key = _controller.text.trim();
+    final box = Hive.box('settings');
+    await box.put('api_bible_key', key);
+    ref.read(apiBibleKeyProvider.notifier).state = key;
+    if (mounted) {
+      FocusScope.of(context).unfocus();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('API.Bible key saved'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.vpn_key_outlined,
+                  color: AppColors.primary, size: 22),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Text(
+                  'API.Bible Key',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _obscure = !_obscure),
+                child: Icon(
+                  _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  color: AppColors.textMuted,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _controller,
+            obscureText: _obscure,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontFamily: 'monospace',
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surfaceElevated,
+              hintText: 'Paste your API.Bible key here',
+              hintStyle: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.check, color: AppColors.primary, size: 20),
+                onPressed: _save,
+                tooltip: 'Save',
+              ),
+            ),
+            onSubmitted: (_) => _save(),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Required for NIV, ESV, NLT, NASB translations. Get a free key at scripture.api.bible',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
             ),
           ),
         ],

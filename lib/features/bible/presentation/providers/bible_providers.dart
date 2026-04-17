@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/bible_content/bible_content_providers.dart';
-import '../../../../core/bible_content/bundled_bible_repository.dart';
+import '../../../../core/bible_content/bible_content_repository.dart';
 import '../../data/repositories/firestore_annotation_repository.dart';
 import '../../data/repositories/firestore_bookmark_repository.dart';
 import '../../domain/entities/annotation.dart';
@@ -10,8 +10,8 @@ import '../../domain/entities/bible_verse.dart';
 import '../../domain/entities/bookmark.dart';
 import '../../domain/repositories/annotation_repository.dart';
 
-final bibleRepositoryProvider = Provider<BundledBibleRepository>((ref) {
-  return ref.watch(bundledBibleRepositoryProvider);
+final bibleRepositoryProvider = Provider<BibleContentRepository>((ref) {
+  return ref.watch(bibleContentRepositoryProvider);
 });
 
 final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
@@ -54,7 +54,7 @@ final searchResultsProvider = FutureProvider<List<BibleVerse>>((ref) async {
   if (query.trim().isEmpty) return [];
   final repo = ref.watch(bibleRepositoryProvider);
   final translation = ref.watch(currentTranslationProvider);
-  return repo.searchAll(query, translation);
+  return repo.searchVerses(query, translation);
 });
 
 const kHighlightColors = [

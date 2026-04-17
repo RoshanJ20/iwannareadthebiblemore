@@ -182,6 +182,5 @@ final notificationSettingsProvider = StateNotifierProvider<
     NotificationSettingsNotifier, NotificationSettings>((ref) {
   return NotificationSettingsNotifier(
     ref.watch(fcmServiceProvider),
-    ref.watch(localNotificationServiceProvider),
   );
 });
