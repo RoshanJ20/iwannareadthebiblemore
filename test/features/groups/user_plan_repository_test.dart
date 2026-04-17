@@ -78,13 +78,63 @@ void main() {
       final plan = _makePlan();
       final created = await repo.createUserPlan(plan);
 
-      await repo.markTodayRead(created.id);
+      await repo.markTodayRead(
+        created.id,
+        userId: 'user1',
+        todayChapter: 'Genesis 1',
+        planId: 'seed_genesis_journey',
+      );
 
       final snap = await fakeFirestore
           .collection('userPlans')
           .doc(created.id)
           .get();
       expect(snap.data()!['todayRead'], isTrue);
+    });
+
+    test('writes readingLog entry for the user', () async {
+      final plan = _makePlan();
+      final created = await repo.createUserPlan(plan);
+
+      await repo.markTodayRead(
+        created.id,
+        userId: 'user1',
+        todayChapter: 'Genesis 1',
+        planId: 'seed_genesis_journey',
+      );
+
+      final logs = await fakeFirestore
+          .collection('users')
+          .doc('user1')
+          .collection('readingLog')
+          .get();
+      expect(logs.docs.length, 1);
+      final logData = logs.docs.first.data();
+      expect(logData['bookId'], 'GEN');
+      expect(logData['chapterId'], 1);
+      expect(logData['planId'], 'seed_genesis_journey');
+      expect(logData['xpEarned'], 50);
+    });
+
+    test('writes bookProgress with arrayUnion for the chapter', () async {
+      final plan = _makePlan();
+      final created = await repo.createUserPlan(plan);
+
+      await repo.markTodayRead(
+        created.id,
+        userId: 'user1',
+        todayChapter: 'Genesis 1',
+        planId: 'seed_genesis_journey',
+      );
+
+      final progress = await fakeFirestore
+          .collection('users')
+          .doc('user1')
+          .collection('bookProgress')
+          .doc('GEN')
+          .get();
+      expect(progress.exists, isTrue);
+      expect(progress.data()!['chapters'], contains(1));
     });
   });
 

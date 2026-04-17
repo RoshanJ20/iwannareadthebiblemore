@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/auth_notifier.dart';
 import '../../../core/design_system/app_colors.dart';
+import '../../../core/design_system/haptics_service.dart';
 import '../../../core/navigation/routes.dart';
 import '../../gamification/presentation/providers/gamification_providers.dart';
 import '../../gamification/presentation/widgets/mascot_widget.dart';
@@ -91,7 +92,7 @@ class _HomeBody extends ConsumerWidget {
             _GroupCheckInCard(group: firstGroup, currentUserId: userId),
             const SizedBox(height: 16),
           ],
-          _TodaysReadingCard(),
+          _TodaysReadingCard(userId: userId),
           const SizedBox(height: 16),
           _VerseOfTheDayCard(),
         ],

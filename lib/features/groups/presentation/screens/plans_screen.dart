@@ -124,7 +124,12 @@ class _ActivePlanCard extends ConsumerWidget {
     try {
       await ref
           .read(userPlanRepositoryProvider)
-          .markTodayRead(userPlan.id);
+          .markTodayRead(
+            userPlan.id,
+            userId: userId,
+            todayChapter: userPlan.todayChapter,
+            planId: userPlan.planId,
+          );
       HapticFeedback.mediumImpact();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
