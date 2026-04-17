@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { firestoreTimestampToDateTime, isSameDay, isYesterday } from "./timezone";
+import { streakMilestoneBonus } from "./xp";
 
 export type StreakTimestamp = { toDate?: () => Date; seconds?: number } | null | undefined;
 
@@ -58,10 +59,7 @@ export function computeStreakUpdate(
   }
 
   const newLongest = Math.max(longestStreak, newStreak);
-
-  // Milestone bonuses only trigger when the streak reaches exactly these values
-  const { streakMilestoneBonus } = require("./xp");
-  const milestoneBonus: number = streakMilestoneBonus(newStreak);
+  const milestoneBonus = streakMilestoneBonus(newStreak);
 
   return {
     newStreak,

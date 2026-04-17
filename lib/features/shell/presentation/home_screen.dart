@@ -251,9 +251,46 @@ class _GroupCheckInCard extends ConsumerWidget {
   }
 }
 
-class _TodaysReadingCard extends StatelessWidget {
+const _bookNameToId = {
+  'Genesis': 'GEN', 'Exodus': 'EXO', 'Leviticus': 'LEV',
+  'Numbers': 'NUM', 'Deuteronomy': 'DEU', 'Joshua': 'JOS',
+  'Judges': 'JDG', 'Ruth': 'RUT', '1 Samuel': '1SA', '2 Samuel': '2SA',
+  '1 Kings': '1KI', '2 Kings': '2KI', '1 Chronicles': '1CH', '2 Chronicles': '2CH',
+  'Ezra': 'EZR', 'Nehemiah': 'NEH', 'Esther': 'EST', 'Job': 'JOB',
+  'Psalms': 'PSA', 'Psalm': 'PSA', 'Proverbs': 'PRO', 'Ecclesiastes': 'ECC',
+  'Song of Solomon': 'SNG', 'Isaiah': 'ISA', 'Jeremiah': 'JER',
+  'Lamentations': 'LAM', 'Ezekiel': 'EZK', 'Daniel': 'DAN', 'Hosea': 'HOS',
+  'Joel': 'JOL', 'Amos': 'AMO', 'Obadiah': 'OBA', 'Jonah': 'JON',
+  'Micah': 'MIC', 'Nahum': 'NAH', 'Habakkuk': 'HAB', 'Zephaniah': 'ZEP',
+  'Haggai': 'HAG', 'Zechariah': 'ZEC', 'Malachi': 'MAL',
+  'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
+  'Acts': 'ACT', 'Romans': 'ROM', '1 Corinthians': '1CO', '2 Corinthians': '2CO',
+  'Galatians': 'GAL', 'Ephesians': 'EPH', 'Philippians': 'PHP',
+  'Colossians': 'COL', '1 Thessalonians': '1TH', '2 Thessalonians': '2TH',
+  '1 Timothy': '1TI', '2 Timothy': '2TI', 'Titus': 'TIT', 'Philemon': 'PHM',
+  'Hebrews': 'HEB', 'James': 'JAS', '1 Peter': '1PE', '2 Peter': '2PE',
+  '1 John': '1JN', '2 John': '2JN', '3 John': '3JN', 'Jude': 'JUD',
+  'Revelation': 'REV',
+};
+
+(String bookId, int chapter) _parseTodayChapter(String todayChapter) {
+  final trimmed = todayChapter.trim();
+  final lastSpace = trimmed.lastIndexOf(' ');
+  if (lastSpace == -1) return ('GEN', 1);
+  final bookName = trimmed.substring(0, lastSpace);
+  final chapter = int.tryParse(trimmed.substring(lastSpace + 1)) ?? 1;
+  return (_bookNameToId[bookName] ?? 'GEN', chapter);
+}
+
+class _TodaysReadingCard extends ConsumerWidget {
+  const _TodaysReadingCard({required this.userId});
+
+  final String userId;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final plansAsync = ref.watch(userActivePlansProvider(userId));
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -280,15 +317,136 @@ class _TodaysReadingCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Start reading to keep your streak',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
+          plansAsync.when(
+            loading: () => const SizedBox(
+              height: 24,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             ),
+            error: (_, __) => const Text(
+              'Unable to load plan',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+            ),
+            data: (plans) {
+              final activePlans = plans.where((p) => !p.isComplete).toList();
+
+              if (activePlans.isEmpty) {
+                return _NoActivePlan();
+              }
+
+              final unread = activePlans
+                  .where((p) => !p.todayRead)
+                  .toList()
+                  .firstOrNull;
+
+              if (unread == null) {
+                return const Row(
+                  children: [
+                    Icon(Icons.check_circle,
+                        color: AppColors.success, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Done for today',
+                      style: TextStyle(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              final planName = ref
+                      .watch(prebuiltPlansProvider)
+                      .where((p) => p.id == unread.planId)
+                      .firstOrNull
+                      ?.name ??
+                  'Reading Plan';
+
+              final (bookId, chapterNumber) =
+                  _parseTodayChapter(unread.todayChapter);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$planName · Day ${unread.currentDay}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    unread.todayChapter,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.background,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        HapticsService.medium();
+                        context.push(
+                            Routes.chapterReaderPath(bookId, chapterNumber));
+                      },
+                      child: const Text(
+                        'Read Now',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
+    );
+  }
+}
+
+class _NoActivePlan extends StatelessWidget {
+  const _NoActivePlan();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'No active plan',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => context.push(Routes.plans),
+            child: const Text('Browse Plans',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+        ),
+      ],
     );
   }
 }
