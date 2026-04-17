@@ -27,10 +27,7 @@ final fcmServiceProvider = Provider<FcmService>((ref) {
 
 // ─── Local Notification Service ──────────────────────────────────────────────
 
-final localNotificationServiceProvider =
-    Provider<LocalNotificationService>((ref) {
-  return LocalNotificationService();
-});
+// LocalNotificationService is fully static; no provider instance needed.
 
 // ─── Notification Settings ───────────────────────────────────────────────────
 
@@ -112,11 +109,10 @@ class NotificationSettings {
 
 class NotificationSettingsNotifier
     extends StateNotifier<NotificationSettings> {
-  NotificationSettingsNotifier(this._fcmService, this._localService)
+  NotificationSettingsNotifier(this._fcmService)
       : super(NotificationSettings.defaults());
 
   final FcmService _fcmService;
-  final LocalNotificationService _localService;
 
   Future<void> load() async {
     state = await NotificationSettings.loadFromHive();
@@ -150,11 +146,25 @@ class NotificationSettingsNotifier
       state.isEnabled(NotificationType.milestone),
     );
 
-    // Local daily reminder
+    // Local notifications
+    final box = Hive.box('settings');
+    final timezone = box.get('reminder_timezone') as String? ??
+        DateTime.now().timeZoneName;
+
     if (state.isEnabled(NotificationType.dailyReminder)) {
-      await _localService.scheduleDaily(state.reminderTime);
+      await LocalNotificationService.scheduleDaily(
+        state.reminderTime.hour,
+        state.reminderTime.minute,
+        timezone,
+      );
     } else {
-      await _localService.cancelAll();
+      await LocalNotificationService.cancelDailyReminder();
+    }
+
+    if (state.isEnabled(NotificationType.streakAtRisk)) {
+      await LocalNotificationService.scheduleStreakAtRisk(timezone);
+    } else {
+      await LocalNotificationService.cancelStreakAtRisk();
     }
   }
 
