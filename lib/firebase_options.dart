@@ -26,22 +26,25 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // STUB VALUES — replace by running `flutterfire configure`
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_REAL_KEY',
-    appId: 'REPLACE_WITH_REAL_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_REAL_SENDER_ID',
+    apiKey: 'FIREBASE_ANDROID_API_KEY',
+    appId: '1:115353396036:android:c5c9773dfad45e1bbb6d11',
+    messagingSenderId: '115353396036',
     projectId: 'iwannareadthebiblemore',
-    storageBucket: 'iwannareadthebiblemore.appspot.com',
+    storageBucket: 'iwannareadthebiblemore.firebasestorage.app',
   );
 
+  // STUB VALUES — replace by running `flutterfire configure`
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_REAL_KEY',
-    appId: 'REPLACE_WITH_REAL_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_REAL_SENDER_ID',
+    apiKey: 'FIREBASE_IOS_API_KEY',
+    appId: '1:115353396036:ios:527edb0844a5ac2ebb6d11',
+    messagingSenderId: '115353396036',
     projectId: 'iwannareadthebiblemore',
-    storageBucket: 'iwannareadthebiblemore.appspot.com',
-    iosClientId: 'REPLACE_WITH_REAL_IOS_CLIENT_ID',
-    iosBundleId: 'com.iwannareadthebiblemore.app',
+    storageBucket: 'iwannareadthebiblemore.firebasestorage.app',
+    androidClientId: '115353396036-2j3bau7hpals07kg5vdieovb787kirfs.apps.googleusercontent.com',
+    iosClientId: '115353396036-i8oasfrm5adus5pmkkgoo1uc752qt75i.apps.googleusercontent.com',
+    iosBundleId: 'com.iwannareadthebiblemore.iwannareadthebiblemore',
   );
+
 }
