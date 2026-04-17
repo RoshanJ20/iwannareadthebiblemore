@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/models/annotation.dart';
-import '../domain/repositories/annotation_repository.dart';
 
-class FirestoreAnnotationRepository implements AnnotationRepository {
+class FirestoreAnnotationRepository {
   final FirebaseFirestore _db;
   final String _userId;
 
@@ -11,7 +10,6 @@ class FirestoreAnnotationRepository implements AnnotationRepository {
   CollectionReference get _col =>
       _db.collection('users').doc(_userId).collection('annotations');
 
-  @override
   Stream<List<Annotation>> watchAnnotations(String bookId, int chapterId) {
     return _col
         .where('bookId', isEqualTo: bookId)
@@ -20,7 +18,6 @@ class FirestoreAnnotationRepository implements AnnotationRepository {
         .map((snap) => snap.docs.map(_fromDoc).toList());
   }
 
-  @override
   Future<void> saveAnnotation(Annotation annotation) async {
     await _col.doc(annotation.id).set({
       'bookId': annotation.bookId,
@@ -32,7 +29,6 @@ class FirestoreAnnotationRepository implements AnnotationRepository {
     });
   }
 
-  @override
   Future<void> deleteAnnotation(String annotationId) =>
       _col.doc(annotationId).delete();
 

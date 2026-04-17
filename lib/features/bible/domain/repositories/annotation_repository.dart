@@ -1,7 +1,17 @@
-import '../models/annotation.dart';
+import '../entities/annotation.dart';
 
 abstract class AnnotationRepository {
-  Stream<List<Annotation>> watchAnnotations(String bookId, int chapterId);
-  Future<void> saveAnnotation(Annotation annotation);
-  Future<void> deleteAnnotation(String annotationId);
+  Stream<List<Annotation>> watchChapterAnnotations(
+    String userId,
+    String bookId,
+    int chapterNumber,
+  );
+  Future<List<Annotation>> getAnnotationsForChapter(
+    String userId,
+    String bookId,
+    int chapterNumber,
+  );
+  Future<Annotation> createAnnotation(Annotation annotation);
+  Future<void> updateAnnotation(Annotation annotation);
+  Future<void> deleteAnnotation(String userId, String annotationId);
 }

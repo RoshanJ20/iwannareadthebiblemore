@@ -1,12 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_notifier.dart';
+import '../../data/repositories/firestore_user_plan_repository.dart';
 import '../../data/repositories/group_repository.dart';
 import '../../data/repositories/plan_repository.dart';
+import '../../data/seed_plans.dart';
+import '../../domain/entities/reading_plan.dart' as ent;
 import '../../domain/models/group.dart';
 import '../../domain/models/group_member.dart';
 import '../../domain/models/plan.dart';
 import '../../domain/models/user_plan.dart';
+import '../../domain/repositories/user_plan_repository.dart';
+
+final prebuiltPlansProvider = Provider<List<ent.ReadingPlan>>(
+  (_) => seedPlans,
+);
+
+final userPlanRepositoryProvider = Provider<UserPlanRepository>(
+  (_) => FirestoreUserPlanRepository(FirebaseFirestore.instance),
+);
 
 final groupRepositoryProvider = Provider<GroupRepository>((ref) {
   final user = ref.watch(authNotifierProvider).valueOrNull;

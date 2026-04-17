@@ -5,7 +5,6 @@ import 'domain/models/bible_book.dart';
 import 'domain/models/bible_chapter.dart';
 import 'domain/models/annotation.dart';
 import 'domain/repositories/bible_repository.dart';
-import 'domain/repositories/annotation_repository.dart';
 import 'data/local_bible_repository.dart';
 import 'data/api_bible_repository.dart';
 import 'data/firestore_annotation_repository.dart';
@@ -20,7 +19,8 @@ final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
   return ApiBibleRepository();
 });
 
-final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
+final annotationRepositoryProvider =
+    Provider<FirestoreAnnotationRepository>((ref) {
   final user = ref.watch(authNotifierProvider).valueOrNull;
   if (user == null) throw StateError('No authenticated user');
   return FirestoreAnnotationRepository(FirebaseFirestore.instance, user.uid);
