@@ -1,24 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/bible_content/bible_content_providers.dart';
 import '../../../../core/bible_content/bible_content_repository.dart';
+import '../../../../core/web_mock/web_mock_repositories.dart';
 import '../../data/repositories/firestore_annotation_repository.dart';
 import '../../data/repositories/firestore_bookmark_repository.dart';
 import '../../domain/entities/annotation.dart';
 import '../../domain/entities/bible_verse.dart';
 import '../../domain/entities/bookmark.dart';
 import '../../domain/repositories/annotation_repository.dart';
+import '../../domain/repositories/bookmark_repository.dart';
 
 final bibleRepositoryProvider = Provider<BibleContentRepository>((ref) {
   return ref.watch(bibleContentRepositoryProvider);
 });
 
 final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
+  if (kIsWeb) return WebMockAnnotationRepository();
   return FirestoreAnnotationRepository(FirebaseFirestore.instance);
 });
 
-final bookmarkRepositoryProvider = Provider<FirestoreBookmarkRepository>((ref) {
+final bookmarkRepositoryProvider = Provider<BookmarkRepository>((ref) {
+  if (kIsWeb) return WebMockBookmarkRepository();
   return FirestoreBookmarkRepository(FirebaseFirestore.instance);
 });
 

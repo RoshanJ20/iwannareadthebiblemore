@@ -55,36 +55,44 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> {
     final uid = ref.read(authNotifierProvider).valueOrNull?.uid;
 
     if (uid != null) {
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'dailyGoalMinutes': data.goalMinutes,
-        'defaultTranslation': 'kjv',
-        'reminderTime':
-            '${data.reminderTime.hour.toString().padLeft(2, '0')}:${data.reminderTime.minute.toString().padLeft(2, '0')}',
-        'timezone': data.timezone,
-      }, SetOptions(merge: true));
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'dailyGoalMinutes': data.goalMinutes,
+          'defaultTranslation': 'kjv',
+          'reminderTime':
+              '${data.reminderTime.hour.toString().padLeft(2, '0')}:${data.reminderTime.minute.toString().padLeft(2, '0')}',
+          'timezone': data.timezone,
+        }, SetOptions(merge: true));
+      } catch (_) {
+        // Non-fatal on web/demo — proceed without Firestore write
+      }
 
       if (data.selectedPlanId != null) {
-        final plan = ref
-            .read(prebuiltPlansProvider)
-            .where((p) => p.id == data.selectedPlanId)
-            .firstOrNull;
-        if (plan != null) {
-          final userPlan = UserPlan(
-            id: '',
-            userId: uid,
-            planId: data.selectedPlanId!,
-            startDate: DateTime.now(),
-            currentDay: 1,
-            completedDays: const [],
-            isComplete: false,
-            todayChapter: plan.readings.isNotEmpty
-                ? '${plan.readings.first.book} ${plan.readings.first.chapter}'
-                : '',
-            todayRead: false,
-          );
-          await ref
-              .read(userPlanRepositoryProvider)
-              .createUserPlan(userPlan);
+        try {
+          final plan = ref
+              .read(prebuiltPlansProvider)
+              .where((p) => p.id == data.selectedPlanId)
+              .firstOrNull;
+          if (plan != null) {
+            final userPlan = UserPlan(
+              id: '',
+              userId: uid,
+              planId: data.selectedPlanId!,
+              startDate: DateTime.now(),
+              currentDay: 1,
+              completedDays: const [],
+              isComplete: false,
+              todayChapter: plan.readings.isNotEmpty
+                  ? '${plan.readings.first.book} ${plan.readings.first.chapter}'
+                  : '',
+              todayRead: false,
+            );
+            await ref
+                .read(userPlanRepositoryProvider)
+                .createUserPlan(userPlan);
+          }
+        } catch (_) {
+          // Non-fatal on web/demo
         }
       }
     }

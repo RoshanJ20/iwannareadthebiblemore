@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/bookmark.dart';
+import '../../domain/repositories/bookmark_repository.dart';
 
-class FirestoreBookmarkRepository {
+class FirestoreBookmarkRepository implements BookmarkRepository {
   FirestoreBookmarkRepository(this._firestore);
 
   final FirebaseFirestore _firestore;

@@ -7,6 +7,7 @@ abstract class AuthRepository {
   Stream<User?> get authStateChanges;
   Future<UserCredential?> signInWithGoogle();
   Future<UserCredential?> signInWithApple();
+  Future<UserCredential?> signInAnonymously();
   Future<void> signOut();
 }
 
@@ -57,6 +58,11 @@ class FirebaseAuthRepository implements AuthRepository {
       accessToken: appleCredential.authorizationCode,
     );
     return _auth.signInWithCredential(oauthCredential);
+  }
+
+  @override
+  Future<UserCredential?> signInAnonymously() async {
+    return _auth.signInAnonymously();
   }
 
   @override

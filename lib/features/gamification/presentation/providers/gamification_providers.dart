@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/web_mock/web_mock_repositories.dart';
 import '../../data/repositories/firestore_user_stats_repository.dart';
 import '../../data/services/xp_store_service.dart';
 import '../../domain/entities/achievement.dart';
@@ -10,6 +12,7 @@ import '../../domain/repositories/user_stats_repository.dart';
 import '../widgets/mascot_widget.dart';
 
 final userStatsRepositoryProvider = Provider<UserStatsRepository>((ref) {
+  if (kIsWeb) return WebMockUserStatsRepository();
   return FirestoreUserStatsRepository(FirebaseFirestore.instance);
 });
 

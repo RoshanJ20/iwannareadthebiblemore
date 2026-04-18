@@ -33,7 +33,7 @@ class Annotation {
         'chapterId': chapterNumber,
         'verseNumber': verseNumber,
         'type': type.name,
-        'color': color.toARGB32(),
+        'color': color.value,
         'text': text,
         'createdAt': createdAt.toIso8601String(),
       };

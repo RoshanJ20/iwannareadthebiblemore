@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/web_mock/web_mock_repositories.dart';
 import '../../data/repositories/firestore_group_repository.dart';
 import '../../data/repositories/firestore_plan_repository.dart';
 import '../../data/repositories/firestore_user_plan_repository.dart';
@@ -15,6 +17,7 @@ import '../../domain/repositories/plan_repository.dart';
 import '../../domain/repositories/user_plan_repository.dart';
 
 final groupRepositoryProvider = Provider<GroupRepository>((ref) {
+  if (kIsWeb) return WebMockGroupRepository();
   return FirestoreGroupRepository(
     FirebaseFirestore.instance,
     FirebaseFunctions.instance,
@@ -26,6 +29,7 @@ final planRepositoryProvider = Provider<PlanRepository>((ref) {
 });
 
 final userPlanRepositoryProvider = Provider<UserPlanRepository>((ref) {
+  if (kIsWeb) return WebMockUserPlanRepository();
   return FirestoreUserPlanRepository(FirebaseFirestore.instance);
 });
 

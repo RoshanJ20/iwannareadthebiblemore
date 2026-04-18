@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -55,32 +56,50 @@ class LoginScreen extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: 12),
-              _SignInButton(
-                key: const Key('apple_sign_in_button'),
-                label: 'Continue with Apple',
-                onPressed: () async {
-                  await HapticsService.medium();
-                  try {
-                    await ref.read(authRepositoryProvider).signInWithApple();
-                  } on SignInWithAppleAuthorizationException catch (e) {
-                    // User cancelled — not an error; no feedback needed
-                    if (e.code == AuthorizationErrorCode.canceled) return;
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Sign-in failed. Please try again.')),
-                      );
+              if (!kIsWeb)
+                _SignInButton(
+                  key: const Key('apple_sign_in_button'),
+                  label: 'Continue with Apple',
+                  onPressed: () async {
+                    await HapticsService.medium();
+                    try {
+                      await ref.read(authRepositoryProvider).signInWithApple();
+                    } on SignInWithAppleAuthorizationException catch (e) {
+                      if (e.code == AuthorizationErrorCode.canceled) return;
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Sign-in failed. Please try again.')),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Sign-in failed. Please try again.')),
+                        );
+                      }
                     }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Sign-in failed. Please try again.')),
-                      );
+                  },
+                ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 12),
+                _SignInButton(
+                  key: const Key('guest_sign_in_button'),
+                  label: 'Continue as Guest',
+                  onPressed: () async {
+                    try {
+                      await ref.read(authRepositoryProvider).signInAnonymously();
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Guest sign-in failed: $e')),
+                        );
+                      }
                     }
-                  }
-                },
-              ),
+                  },
+                ),
+              ],
             ],
           ),
         ),

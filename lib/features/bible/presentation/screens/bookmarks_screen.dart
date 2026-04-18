@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/auth/auth_notifier.dart';
 import '../../../../core/bible_content/book_catalog.dart';
 import '../../../../core/design_system/app_colors.dart';
 import '../../../../core/navigation/routes.dart';
@@ -12,7 +12,7 @@ class BookmarksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final userId = ref.watch(authNotifierProvider).valueOrNull?.uid ?? '';
 
     if (userId.isEmpty) {
       return Scaffold(
