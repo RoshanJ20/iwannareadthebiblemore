@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:home_widget/home_widget.dart';
+// home_widget is mobile-only; import guarded by kIsWeb checks below.
+import 'package:home_widget/home_widget.dart'
+    if (dart.library.html) 'package:iwannareadthebiblemore/features/notifications/data/services/home_widget_stub.dart';
 
 /// Service that keeps the iOS/Android home-screen widget (and iOS lock-screen
 /// widget) in sync with the latest user data.
