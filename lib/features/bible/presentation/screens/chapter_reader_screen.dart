@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/bible_content/book_catalog.dart';
 import '../../../../core/design_system/app_colors.dart';
 import '../../../../core/navigation/routes.dart';
@@ -40,36 +39,26 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   void _goToChapter(int chapter) =>
       context.go(Routes.chapterReaderPath(widget.bookId, chapter));
 
-  TextStyle _resolveBodyFont(ReaderPreferences prefs) {
-    final base = TextStyle(
-      fontSize: prefs.fontSize,
-      height: prefs.lineHeight,
-      color: AppColors.textPrimary,
-    );
-    switch (prefs.fontFamily) {
-      case 'lora':
-        return GoogleFonts.lora(textStyle: base);
-      case 'garamond':
-        return GoogleFonts.ebGaramond(textStyle: base);
-      default:
-        return base;
-    }
-  }
+  TextStyle _resolveBodyFont(ReaderPreferences prefs) => TextStyle(
+        fontFamily: _fontFamily(prefs.fontFamily),
+        fontSize: prefs.fontSize,
+        height: prefs.lineHeight,
+        color: AppColors.textPrimary,
+      );
 
-  TextStyle _resolveHeadingFont(ReaderPreferences prefs) {
-    final base = TextStyle(
-      fontSize: prefs.fontSize * 1.5,
-      fontWeight: FontWeight.bold,
-      color: AppColors.textPrimary,
-      height: 1.2,
-    );
-    switch (prefs.fontFamily) {
-      case 'lora':
-        return GoogleFonts.lora(textStyle: base);
-      case 'garamond':
-        return GoogleFonts.ebGaramond(textStyle: base);
-      default:
-        return base;
+  TextStyle _resolveHeadingFont(ReaderPreferences prefs) => TextStyle(
+        fontFamily: _fontFamily(prefs.fontFamily),
+        fontSize: prefs.fontSize * 1.5,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        height: 1.2,
+      );
+
+  static String? _fontFamily(String key) {
+    switch (key) {
+      case 'lora': return 'Lora';
+      case 'garamond': return 'EBGaramond';
+      default: return null; // system font
     }
   }
 

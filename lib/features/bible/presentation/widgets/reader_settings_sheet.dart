@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/design_system/app_colors.dart';
 import '../providers/reader_preferences_provider.dart';
 
@@ -69,7 +68,7 @@ class ReaderSettingsSheet extends ConsumerWidget {
               _FontChip(
                 label: 'Serif',
                 sample: 'Lora',
-                sampleStyle: GoogleFonts.lora(),
+                sampleStyle: const TextStyle(fontFamily: 'Lora'),
                 selected: prefs.fontFamily == 'lora',
                 onTap: () => notifier.setFontFamily('lora'),
               ),
@@ -85,7 +84,7 @@ class ReaderSettingsSheet extends ConsumerWidget {
               _FontChip(
                 label: 'Classic',
                 sample: 'Garamond',
-                sampleStyle: GoogleFonts.ebGaramond(),
+                sampleStyle: const TextStyle(fontFamily: 'EBGaramond'),
                 selected: prefs.fontFamily == 'garamond',
                 onTap: () => notifier.setFontFamily('garamond'),
               ),

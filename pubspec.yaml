@@ -46,8 +46,6 @@ dependencies:
   # HTTP client
   http: ^1.2.0
 
-  # Fonts
-  google_fonts: 6.2.1
 
   # Utilities
   share_plus: ^9.0.0
@@ -73,3 +71,12 @@ flutter:
     - assets/bible/kjv/
     - assets/bible/web/
     - assets/images/
+  fonts:
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/Lora.ttf
+        - asset: assets/fonts/Lora-Italic.ttf
+          style: italic
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond.ttf
