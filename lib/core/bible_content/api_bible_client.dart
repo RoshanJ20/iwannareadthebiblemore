@@ -1,15 +1,20 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import '../../features/bible/domain/entities/bible_verse.dart';
 
 class ApiBibleClient {
-  ApiBibleClient({required this.apiKey, http.Client? client})
-      : _client = client ?? http.Client();
+  ApiBibleClient({required this.apiKey, http.Client? client, String? baseUrl})
+      : _client = client ?? http.Client(),
+        _baseUrl = baseUrl ?? (kIsWeb ? _proxyBase : _directBase);
 
   final String apiKey;
   final http.Client _client;
+  final String _baseUrl;
 
-  static const _baseUrl = 'https://rest.api.bible/v1';
+  static const _directBase = 'https://rest.api.bible/v1';
+  // On web, route through the local proxy server to avoid CORS origin restrictions.
+  static const _proxyBase = 'http://localhost:8888/proxy/v1';
 
   static const bibleIds = {
     'kjv': 'de4e12af7f28f599-02',
