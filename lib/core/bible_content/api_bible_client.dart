@@ -9,7 +9,7 @@ class ApiBibleClient {
   final String apiKey;
   final http.Client _client;
 
-  static const _baseUrl = 'https://api.scripture.api.bible/v1';
+  static const _baseUrl = 'https://rest.api.bible/v1';
 
   static const bibleIds = {
     'kjv': 'de4e12af7f28f599-02',
