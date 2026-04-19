@@ -25,11 +25,6 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Home'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-      ),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -49,6 +44,13 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+String _greeting() {
+  final hour = DateTime.now().hour;
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 class _HomeBody extends ConsumerWidget {
   const _HomeBody({required this.userId});
 
@@ -62,42 +64,114 @@ class _HomeBody extends ConsumerWidget {
     final firstGroup = groupsAsync.valueOrNull?.firstOrNull;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          MascotWidget(state: mascotState, size: 140),
-          const SizedBox(height: 20),
-          statsAsync.when(
-            loading: () => const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          // Gradient header
+          _HomeHeader(statsAsync: statsAsync),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                StreakBadge(streak: 0),
-                SizedBox(width: 16),
-                XpBadge(xpTotal: 0),
-              ],
-            ),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (stats) => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                StreakBadge(streak: stats.currentStreak),
-                const SizedBox(width: 16),
-                XpBadge(xpTotal: stats.xpTotal),
+                const SizedBox(height: 4),
+                MascotWidget(state: mascotState, size: 130),
+                const SizedBox(height: 28),
+                if (firstGroup != null) ...[
+                  _GroupCheckInCard(group: firstGroup, currentUserId: userId),
+                  const SizedBox(height: 16),
+                ],
+                _TodaysReadingCard(userId: userId),
+                const SizedBox(height: 16),
+                _VerseOfTheDayCard(),
+                const SizedBox(height: 32),
               ],
             ),
           ),
-          const SizedBox(height: 28),
-          if (firstGroup != null) ...[
-            _GroupCheckInCard(group: firstGroup, currentUserId: userId),
-            const SizedBox(height: 16),
-          ],
-          _TodaysReadingCard(userId: userId),
-          const SizedBox(height: 16),
-          _VerseOfTheDayCard(),
         ],
       ),
     );
+  }
+}
+
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader({required this.statsAsync});
+
+  final AsyncValue<dynamic> statsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        top: top + 20,
+        bottom: 24,
+        left: 20,
+        right: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.primary.withOpacity(0.10),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _greeting(),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _todayLabel(),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          statsAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (stats) => Row(
+              children: [
+                StreakBadge(streak: stats.currentStreak, compact: true),
+                const SizedBox(width: 8),
+                XpBadge(xpTotal: stats.xpTotal, compact: true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _todayLabel() {
+    final now = DateTime.now();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[now.month - 1]} ${now.day}, ${now.year}';
   }
 }
 
@@ -144,25 +218,32 @@ class _GroupCheckInCard extends ConsumerWidget {
       onTap: () => context.push(Routes.groupDetailPath(group.id)),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          border: Border.all(color: AppColors.primary.withOpacity(0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.group, color: AppColors.primary, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.group, color: AppColors.primary, size: 16),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Group Check-In · ${group.name}',
+                    group.name,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -171,14 +252,16 @@ class _GroupCheckInCard extends ConsumerWidget {
                 const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             membersAsync.when(
-              loading: () => const SizedBox(
-                height: 20,
-                child: LinearProgressIndicator(
-                  backgroundColor: AppColors.surfaceElevated,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primary),
+              loading: () => ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: const SizedBox(
+                  height: 3,
+                  child: LinearProgressIndicator(
+                    backgroundColor: AppColors.surfaceElevated,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
                 ),
               ),
               error: (_, __) => const SizedBox.shrink(),
@@ -186,20 +269,30 @@ class _GroupCheckInCard extends ConsumerWidget {
                 if (members.isEmpty) {
                   return const Text(
                     'No members yet',
-                    style:
-                        TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 13),
                   );
                 }
                 final readCount = members.where((m) => m.todayRead).length;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '$readCount of ${members.length} read today',
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13),
+                    Row(
+                      children: [
+                        Text(
+                          '$readCount of ${members.length}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Text(
+                          ' read today',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     ...members.map(
                       (m) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 3),
@@ -207,12 +300,12 @@ class _GroupCheckInCard extends ConsumerWidget {
                           children: [
                             Icon(
                               m.todayRead
-                                  ? Icons.check_circle
+                                  ? Icons.check_circle_rounded
                                   : Icons.radio_button_unchecked,
                               color: m.todayRead
                                   ? AppColors.success
                                   : AppColors.textMuted,
-                              size: 18,
+                              size: 17,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -221,19 +314,28 @@ class _GroupCheckInCard extends ConsumerWidget {
                                     ? '${m.displayName} (you)'
                                     : m.displayName,
                                 style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14),
+                                    color: AppColors.textPrimary, fontSize: 14),
                               ),
                             ),
                             if (!m.todayRead && m.userId != currentUserId)
                               GestureDetector(
                                 onTap: () => _sendNudge(context, ref, m),
-                                child: const Text(
-                                  'Nudge',
-                                  style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: AppColors.primary.withOpacity(0.3)),
+                                  ),
+                                  child: const Text(
+                                    'Nudge',
+                                    style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600),
+                                  ),
                                 ),
                               ),
                           ],
@@ -297,30 +399,39 @@ class _TodaysReadingCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.menu_book, color: AppColors.primary, size: 20),
-              SizedBox(width: 8),
-              Text(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 16),
+              ),
+              const SizedBox(width: 10),
+              const Text(
                 "Today's Reading",
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           plansAsync.when(
             loading: () => const SizedBox(
               height: 24,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.primary)),
             ),
             error: (_, __) => const Text(
               'Unable to load plan',
@@ -333,19 +444,17 @@ class _TodaysReadingCard extends ConsumerWidget {
                 return _NoActivePlan();
               }
 
-              final unread = activePlans
-                  .where((p) => !p.todayRead)
-                  .toList()
-                  .firstOrNull;
+              final unread =
+                  activePlans.where((p) => !p.todayRead).toList().firstOrNull;
 
               if (unread == null) {
                 return const Row(
                   children: [
-                    Icon(Icons.check_circle,
+                    Icon(Icons.check_circle_rounded,
                         color: AppColors.success, size: 20),
                     SizedBox(width: 8),
                     Text(
-                      'Done for today',
+                      'All done for today',
                       style: TextStyle(
                         color: AppColors.success,
                         fontWeight: FontWeight.w600,
@@ -372,29 +481,33 @@ class _TodaysReadingCard extends ConsumerWidget {
                   Text(
                     '$planName · Day ${unread.currentDay}',
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     unread.todayChapter,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.background,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
                       onPressed: () {
                         HapticsService.medium();
@@ -404,7 +517,7 @@ class _TodaysReadingCard extends ConsumerWidget {
                       child: const Text(
                         'Read Now',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 15),
+                            fontWeight: FontWeight.w700, fontSize: 15),
                       ),
                     ),
                   ),
@@ -430,14 +543,14 @@ class _NoActivePlan extends StatelessWidget {
           'No active plan',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              side: const BorderSide(color: AppColors.primary, width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -456,47 +569,74 @@ class _VerseOfTheDayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.streakGold.withOpacity(0.3)),
+        border: Border.all(color: AppColors.streakGold.withOpacity(0.25)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.format_quote, color: AppColors.streakGold, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Verse of the Day',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Gold left accent bar
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: AppColors.streakGold,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '"Your word is a lamp to my feet and a light to my path."',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontStyle: FontStyle.italic,
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '— Psalm 119:105',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome,
+                            color: AppColors.streakGold.withOpacity(0.8),
+                            size: 14),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'VERSE OF THE DAY',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      '"Your word is a lamp to my feet and a light to my path."',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '— Psalm 119:105',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

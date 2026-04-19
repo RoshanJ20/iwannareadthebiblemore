@@ -1,48 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 abstract class AppTypography {
-  static TextTheme get textTheme => const TextTheme(
-        displayLarge: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.5,
-        ),
-        displayMedium: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
+  static TextTheme get textTheme => TextTheme(
+        displayLarge: GoogleFonts.lora(
+          fontSize: 34,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: -0.5,
+          height: 1.2,
         ),
-        titleLarge: TextStyle(
+        displayMedium: GoogleFonts.lora(
+          fontSize: 26,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          height: 1.3,
+        ),
+        headlineMedium: GoogleFonts.lora(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          height: 1.3,
+        ),
+        titleLarge: const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.1,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: AppColors.textPrimary,
-          height: 1.6,
+          height: 1.7,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.normal,
           color: AppColors.textSecondary,
           height: 1.5,
         ),
-        labelLarge: TextStyle(
-          fontSize: 13,
+        labelLarge: const TextStyle(
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
-          letterSpacing: 0.5,
+          letterSpacing: 0.3,
         ),
-        labelSmall: TextStyle(
+        labelSmall: const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: AppColors.textMuted,

@@ -19,16 +19,16 @@ class ShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: shell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: shell.currentIndex,
-        onTap: (index) => shell.goBranch(
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: shell.currentIndex,
+        onDestinationSelected: (index) => shell.goBranch(
           index,
           initialLocation: index == shell.currentIndex,
         ),
-        items: _tabs
-            .map((t) => BottomNavigationBarItem(
+        destinations: _tabs
+            .map((t) => NavigationDestination(
                   icon: Icon(t.icon),
-                  activeIcon: Icon(t.activeIcon),
+                  selectedIcon: Icon(t.activeIcon),
                   label: t.label,
                 ))
             .toList(),

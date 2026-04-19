@@ -9,23 +9,34 @@ class XpBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = compact ? 16.0 : 22.0;
-    final fontSize = compact ? 13.0 : 16.0;
+    final iconSize = compact ? 13.0 : 17.0;
+    final fontSize = compact ? 12.0 : 13.0;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.monetization_on, size: iconSize, color: AppColors.xpGold),
-        const SizedBox(width: 4),
-        Text(
-          _formatXp(xpTotal),
-          style: TextStyle(
-            color: AppColors.xpGold,
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 12,
+        vertical: compact ? 4 : 7,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.xpGold.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.xpGold.withOpacity(0.30), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.stars_rounded, size: iconSize, color: AppColors.xpGold),
+          const SizedBox(width: 5),
+          Text(
+            _formatXp(xpTotal),
+            style: TextStyle(
+              color: AppColors.xpGold,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

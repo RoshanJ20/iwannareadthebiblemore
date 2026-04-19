@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 
 abstract class AppColors {
-  // Backgrounds
-  static const Color background = Color(0xFF0D0D1A);
-  static const Color surface = Color(0xFF1A1A2E);
-  static const Color surfaceElevated = Color(0xFF2A2A4E);
+  // Backgrounds — warm charcoal, like a candlelit room at night
+  static const Color background = Color(0xFF0E0B08);
+  static const Color surface = Color(0xFF1A1610);
+  static const Color surfaceElevated = Color(0xFF272118);
 
-  // Brand
-  static const Color primary = Color(0xFFC77DFF);      // purple
-  static const Color primaryVariant = Color(0xFF9B4DCA);
+  // Brand — warm amber (candlelight glow)
+  static const Color primary = Color(0xFFE8940A);
+  static const Color primaryVariant = Color(0xFFB67008);
 
-  // Accent
-  static const Color streakOrange = Color(0xFFFF6B35);
-  static const Color streakRed = Color(0xFFE94560);
-  static const Color streakGold = Color(0xFFF8C537);
-  static const Color streakDiamond = Color(0xFF4CC9F0);
-  static const Color success = Color(0xFF43E97B);
-  static const Color error = streakRed; // intentionally same hue; update independently if brand/error diverge
+  // Gamification tiers
+  static const Color streakOrange = Color(0xFFF07030);
+  static const Color streakRed = Color(0xFFD04040);
+  static const Color streakGold = Color(0xFFDDB830);
+  static const Color streakDiamond = Color(0xFF60C8E0);
+  static const Color success = Color(0xFF5A9E70);
+  static const Color error = Color(0xFFC84040);
 
-  // Text
-  static const Color textPrimary = Color(0xFFE8EAF0);
-  static const Color textSecondary = Color(0xFFA8B2D8);
-  static const Color textMuted = Color(0xFF555577);
+  // Text — warm parchment tones
+  static const Color textPrimary = Color(0xFFF0E8D8);
+  static const Color textSecondary = Color(0xFFB0986A);
+  static const Color textMuted = Color(0xFF6A5438);
 
-  // XP gold — intentionally same hue as streakGold; update independently if XP branding diverges
+  // XP economy — same hue as streakGold; update independently if XP branding diverges
   static const Color xpGold = streakGold;
 }

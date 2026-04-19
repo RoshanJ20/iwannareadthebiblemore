@@ -17,38 +17,20 @@ class BibleScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
-        title: const Text('Bible'),
+        title: const Text('Scripture'),
         actions: [
-          DropdownButton<String>(
-            value: translation,
-            dropdownColor: AppColors.surface,
-            underline: const SizedBox(),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-            items: const [
-              DropdownMenuItem(value: 'niv', child: Text('NIV')),
-              DropdownMenuItem(value: 'esv', child: Text('ESV')),
-              DropdownMenuItem(value: 'nlt', child: Text('NLT')),
-              DropdownMenuItem(value: 'nasb', child: Text('NASB')),
-              DropdownMenuItem(value: 'kjv', child: Text('KJV')),
-              DropdownMenuItem(value: 'web', child: Text('WEB')),
-            ],
-            onChanged: (v) {
-              if (v != null) {
-                ref.read(currentTranslationProvider.notifier).state = v;
-              }
-            },
-          ),
-          const SizedBox(width: 4),
+          _TranslationDropdown(translation: translation, ref: ref),
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search_rounded),
             onPressed: () => context.go(Routes.search),
           ),
           IconButton(
-            icon: const Icon(Icons.bookmark_outline),
+            icon: const Icon(Icons.bookmark_outline_rounded),
             onPressed: () => context.go(Routes.bookmarks),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: ListView(
@@ -63,7 +45,52 @@ class BibleScreen extends ConsumerWidget {
                 .where((b) => b.testament == Testament.newTestament)
                 .toList(),
           ),
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+}
+
+class _TranslationDropdown extends StatelessWidget {
+  const _TranslationDropdown({required this.translation, required this.ref});
+
+  final String translation;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.textMuted.withOpacity(0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: translation,
+          dropdownColor: AppColors.surfaceElevated,
+          icon: const Icon(Icons.expand_more, color: AppColors.textMuted, size: 16),
+          style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600),
+          items: const [
+            DropdownMenuItem(value: 'niv', child: Text('NIV')),
+            DropdownMenuItem(value: 'esv', child: Text('ESV')),
+            DropdownMenuItem(value: 'nlt', child: Text('NLT')),
+            DropdownMenuItem(value: 'nasb', child: Text('NASB')),
+            DropdownMenuItem(value: 'kjv', child: Text('KJV')),
+            DropdownMenuItem(value: 'web', child: Text('WEB')),
+          ],
+          onChanged: (v) {
+            if (v != null) {
+              ref.read(currentTranslationProvider.notifier).state = v;
+            }
+          },
+        ),
       ),
     );
   }
@@ -81,14 +108,36 @@ class _TestamentSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: AppColors.primary,
+          padding: const EdgeInsets.fromLTRB(16, 28, 16, 4),
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: AppColors.primary,
+                      fontSize: 20,
+                    ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: AppColors.primary.withOpacity(0.2),
                 ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${books.length} books',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
+        const SizedBox(height: 4),
         ...books.map((book) => _BookTile(book: book)),
       ],
     );
@@ -104,11 +153,13 @@ class _BookTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => context.go(Routes.chapterListPath(book.id)),
+      splashColor: AppColors.primary.withOpacity(0.06),
+      highlightColor: AppColors.primary.withOpacity(0.04),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: AppColors.surfaceElevated, width: 0.5),
+            bottom: BorderSide(color: AppColors.surfaceElevated, width: 0.8),
           ),
         ),
         child: Row(
@@ -116,18 +167,25 @@ class _BookTile extends StatelessWidget {
             Expanded(
               child: Text(
                 book.name,
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ),
             Text(
               '${book.totalChapters} ch',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(width: 8),
             const Icon(
-              Icons.chevron_right,
+              Icons.chevron_right_rounded,
               color: AppColors.textMuted,
-              size: 20,
+              size: 18,
             ),
           ],
         ),

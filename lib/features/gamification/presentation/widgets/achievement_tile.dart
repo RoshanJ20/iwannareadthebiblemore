@@ -20,40 +20,60 @@ class AchievementTile extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: earned ? AppColors.primary.withOpacity(0.4) : AppColors.textMuted.withOpacity(0.2),
+          color: earned
+              ? AppColors.primary.withOpacity(0.35)
+              : AppColors.textMuted.withOpacity(0.15),
         ),
+        boxShadow: earned
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.10),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Stack(
             alignment: Alignment.center,
             children: [
-              Text(
-                achievement.iconEmoji,
-                style: TextStyle(
-                  fontSize: 36,
-                  color: earned ? null : AppColors.textMuted,
+              if (earned)
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              Opacity(
+                opacity: earned ? 1.0 : 0.35,
+                child: Text(
+                  achievement.iconEmoji,
+                  style: const TextStyle(fontSize: 34),
                 ),
               ),
               if (!earned)
                 const Positioned(
                   right: 0,
                   bottom: 0,
-                  child: Icon(Icons.lock, size: 16, color: AppColors.textMuted),
+                  child: Icon(Icons.lock_rounded, size: 14, color: AppColors.textMuted),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             achievement.title,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: earned ? AppColors.textPrimary : AppColors.textMuted,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
           ),
@@ -64,6 +84,7 @@ class AchievementTile extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.success,
                 fontSize: 11,
+                fontWeight: FontWeight.w500,
               ),
             )
           else

@@ -59,9 +59,10 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   TextStyle _resolveHeadingFont(ReaderPreferences prefs) {
     final base = TextStyle(
       fontSize: prefs.fontSize * 1.5,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: AppColors.textPrimary,
       height: 1.2,
+      letterSpacing: -0.3,
     );
     switch (prefs.fontFamily) {
       case 'lora':
@@ -104,33 +105,52 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textSecondary,
         elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(
           '${book.name} ${widget.chapterNumber}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
         ),
         actions: [
-          DropdownButton<String>(
-            value: translation,
-            dropdownColor: AppColors.surface,
-            underline: const SizedBox(),
-            style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 13),
-            items: const [
-              DropdownMenuItem(value: 'niv', child: Text('NIV')),
-              DropdownMenuItem(value: 'esv', child: Text('ESV')),
-              DropdownMenuItem(value: 'nlt', child: Text('NLT')),
-              DropdownMenuItem(value: 'nasb', child: Text('NASB')),
-              DropdownMenuItem(value: 'kjv', child: Text('KJV')),
-              DropdownMenuItem(value: 'web', child: Text('WEB')),
-            ],
-            onChanged: (v) {
-              if (v != null) {
-                ref.read(currentTranslationProvider.notifier).state = v;
-              }
-            },
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.textMuted.withOpacity(0.3)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: translation,
+                dropdownColor: AppColors.surfaceElevated,
+                icon: const Icon(Icons.expand_more,
+                    color: AppColors.textMuted, size: 14),
+                style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600),
+                items: const [
+                  DropdownMenuItem(value: 'niv', child: Text('NIV')),
+                  DropdownMenuItem(value: 'esv', child: Text('ESV')),
+                  DropdownMenuItem(value: 'nlt', child: Text('NLT')),
+                  DropdownMenuItem(value: 'nasb', child: Text('NASB')),
+                  DropdownMenuItem(value: 'kjv', child: Text('KJV')),
+                  DropdownMenuItem(value: 'web', child: Text('WEB')),
+                ],
+                onChanged: (v) {
+                  if (v != null) {
+                    ref.read(currentTranslationProvider.notifier).state = v;
+                  }
+                },
+              ),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.text_fields_rounded, size: 20),
@@ -169,9 +189,9 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.menu_book_outlined,
-                          color: AppColors.textMuted, size: 48),
-                      const SizedBox(height: 16),
+                      Icon(Icons.menu_book_outlined,
+                          color: AppColors.textMuted.withOpacity(0.5), size: 52),
+                      const SizedBox(height: 20),
                       Text(
                         'Not available in ${translation.toUpperCase()}',
                         style: const TextStyle(
@@ -201,14 +221,12 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Chapter heading
                   Text(
                     '${book.name} ${widget.chapterNumber}',
                     style: headingFont,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
-                  // Continuous prose with inline verse numbers
                   _ChapterProse(
                     verses: verses,
                     annotations: annotations,
@@ -233,16 +251,15 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 56),
 
-                  // Bottom prev/next navigation
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       if (widget.chapterNumber > 1)
                         _NavButton(
                           label: 'Chapter ${widget.chapterNumber - 1}',
-                          icon: Icons.chevron_left,
+                          icon: Icons.chevron_left_rounded,
                           iconFirst: true,
                           onTap: () => _goToChapter(widget.chapterNumber - 1),
                         )
@@ -251,7 +268,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                       if (widget.chapterNumber < book.totalChapters)
                         _NavButton(
                           label: 'Chapter ${widget.chapterNumber + 1}',
-                          icon: Icons.chevron_right,
+                          icon: Icons.chevron_right_rounded,
                           iconFirst: false,
                           onTap: () => _goToChapter(widget.chapterNumber + 1),
                         )
@@ -259,7 +276,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                         const SizedBox.shrink(),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                 ],
               ),
             );
@@ -296,7 +313,6 @@ class _ChapterProse extends StatelessWidget {
 
     final spans = <InlineSpan>[];
     for (final verse in verses) {
-      // Tappable superscript verse number
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.top,
         child: GestureDetector(
@@ -355,10 +371,11 @@ class _NavButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
         decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
