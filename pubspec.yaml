@@ -47,7 +47,7 @@ dependencies:
   http: ^1.2.0
 
   # Fonts
-  google_fonts: ^6.2.1
+  google_fonts: 6.2.1
 
   # Utilities
   share_plus: ^9.0.0
