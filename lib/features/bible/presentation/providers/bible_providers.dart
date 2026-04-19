@@ -27,7 +27,7 @@ final bookmarkRepositoryProvider = Provider<BookmarkRepository>((ref) {
   return FirestoreBookmarkRepository(FirebaseFirestore.instance);
 });
 
-final currentTranslationProvider = StateProvider<String>((ref) => 'kjv');
+final currentTranslationProvider = StateProvider<String>((ref) => 'niv');
 
 final bibleChapterProvider = FutureProvider.family<List<BibleVerse>, ({String bookId, int chapterNumber})>(
   (ref, args) async {

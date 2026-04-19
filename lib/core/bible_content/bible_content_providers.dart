@@ -14,9 +14,13 @@ final hiveBibleCacheProvider = Provider<HiveBibleCache>((ref) {
   return HiveBibleCache();
 });
 
+const _kDefaultApiBibleKey = '_zKaJWv89IpMY3ipo0fz9';
+
 final apiBibleKeyProvider = StateProvider<String>((ref) {
   final box = Hive.box('settings');
-  return (box.get('api_bible_key') as String?) ?? '';
+  return (box.get('api_bible_key') as String?)?.isNotEmpty == true
+      ? box.get('api_bible_key') as String
+      : _kDefaultApiBibleKey;
 });
 
 final apiBibleClientProvider = Provider<ApiBibleClient>((ref) {
