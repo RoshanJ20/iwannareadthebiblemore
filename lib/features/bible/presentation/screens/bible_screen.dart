@@ -27,6 +27,10 @@ class BibleScreen extends ConsumerWidget {
             underline: const SizedBox(),
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
             items: const [
+              DropdownMenuItem(value: 'niv', child: Text('NIV')),
+              DropdownMenuItem(value: 'esv', child: Text('ESV')),
+              DropdownMenuItem(value: 'nlt', child: Text('NLT')),
+              DropdownMenuItem(value: 'nasb', child: Text('NASB')),
               DropdownMenuItem(value: 'kjv', child: Text('KJV')),
               DropdownMenuItem(value: 'web', child: Text('WEB')),
             ],
