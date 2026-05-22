@@ -18,41 +18,49 @@ class StreakBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _tierColor;
-    final iconSize = compact ? 16.0 : 22.0;
-    final fontSize = compact ? 13.0 : 16.0;
+    final iconSize = compact ? 13.0 : 17.0;
+    final fontSize = compact ? 12.0 : 13.0;
 
-    if (streak == 0) {
-      return Row(
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 12,
+        vertical: compact ? 4 : 7,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.30), width: 1),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.circle, size: iconSize, color: color),
-          const SizedBox(width: 4),
+          Icon(
+            streak == 0 ? Icons.circle_outlined : Icons.local_fire_department,
+            size: iconSize,
+            color: color,
+          ),
+          const SizedBox(width: 5),
           Text(
-            '0',
+            '$streak',
             style: TextStyle(
               color: color,
               fontSize: fontSize,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
+          if (!compact) ...[
+            const SizedBox(width: 2),
+            Text(
+              streak == 1 ? 'day' : 'days',
+              style: TextStyle(
+                color: color.withOpacity(0.65),
+                fontSize: fontSize - 1,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ],
-      );
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.local_fire_department, size: iconSize, color: color),
-        const SizedBox(width: 4),
-        Text(
-          '$streak',
-          style: TextStyle(
-            color: color,
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

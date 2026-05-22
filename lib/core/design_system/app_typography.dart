@@ -4,31 +4,37 @@ import 'app_colors.dart';
 abstract class AppTypography {
   static TextTheme get textTheme => const TextTheme(
         displayLarge: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
+          fontSize: 34,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -0.5,
+          height: 1.2,
         ),
         displayMedium: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
+          fontSize: 26,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: -0.3,
+          height: 1.3,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          letterSpacing: -0.2,
+          height: 1.3,
         ),
         titleLarge: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.1,
         ),
         bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: AppColors.textPrimary,
-          height: 1.6,
+          height: 1.7,
         ),
         bodyMedium: TextStyle(
           fontSize: 14,
@@ -37,10 +43,10 @@ abstract class AppTypography {
           height: 1.5,
         ),
         labelLarge: TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
-          letterSpacing: 0.5,
+          letterSpacing: 0.3,
         ),
         labelSmall: TextStyle(
           fontSize: 11,
